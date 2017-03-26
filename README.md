@@ -6,6 +6,5 @@
 <br>
 <br>
 <img src="images/watson.png" width="120">
-<img src="images/dsx.svg" width="120">
 <img src="images/sklearn.png" width="120">
 <img src="images/python.png" width="120">
