@@ -1,15 +1,16 @@
 import numpy as np
 import requests
 import os
+import datetime
 from dotenv import load_dotenv, find_dotenv
 
 
 load_dotenv(find_dotenv())
 
 
-def historical_weather(address, start_date, end_date, units='e'):
+def historical_weather(address, end_date, units='e'):
     """
-    Input: address, start date, end date and units (strings)
+    Input: address, end date and units (strings)
     Output: historical weather data (json)
     Date format: 2017-03-25 -> '20170325'
     """
@@ -27,6 +28,20 @@ def historical_weather(address, start_date, end_date, units='e'):
                      params=payload)
     lat = r.json()['location']['latitude'][0]
     lon = r.json()['location']['longitude'][0]
+    # Find start_date one week earlier
+    end_dt = datetime.date(int(end_date[0:4]),
+                           int(end_date[4:6]),
+                           int(end_date[6:]))
+    td = datetime.timedelta(days=7)
+    start_dt = end_dt - td
+    year = str(start_dt.year)
+    month = str(start_dt.month)
+    if len(month) == 1:
+        month = '0' + month
+    day = str(start_dt.day)
+    if len(day) == 1:
+        day = '0' + day
+    start_date = (year + month + day)
     # Get 7 day forcast from latude and longitude coordinates
     payload = {'units': 'e',
                'startDate': start_date,
@@ -90,7 +105,7 @@ def historical_gloom(hist_json):
 def outdoor_bool(forecast_json):
     """
     Input: 7 day weather forecast (json)
-    Output: outside activity bool (int)
+    Output: outside activity bool
     """
     # get forecast for next day
     forecast = forecast_json['forecasts'][1]['day']
