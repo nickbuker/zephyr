@@ -13,9 +13,9 @@ from dotenv import load_dotenv, find_dotenv
 import os
 
 
-def find_risk(tweet, tone_analyzer):
+def find_risk(tweet, tone_analyzer, testing=False):
 
-    # crisis is a determined experimentally by analzing tweets
+    # crisis vector is determined experimentally by analzing tweets
     # for sentiments that reflect when a person may be depressed
     # or otherwise at risk
 
@@ -30,10 +30,17 @@ def find_risk(tweet, tone_analyzer):
     # Find cosine similarity between sentiment of current tweet
     # and crisis vector
     risk = cosine_similarity(crisis, sentiment)[0][0]
-    return round(risk,4)
+    risk = round(risk,4)
+    if testing == True:
+        emotion = 'Ang Disg Fear Joy Sad'
+        sentiment = [round(float(s),4) for s in sentiment[0]]
+        risk = 'emotion: {}\ncrisis:  {}\ntweet: {}\nrisk score: {}'\
+                .format(emotion, crisis[0], sentiment, risk)
+
+    return risk
 
 
-def process_feed(tweet_list):
+def process_feed(tweet_list, testing=False):
     # takes a list(/feed) of dictionaries of tweet data
     # adds risk score to each item in the list(/feed)
 
@@ -44,21 +51,35 @@ def process_feed(tweet_list):
        version='2016-05-19')
 
     for tweet in tweet_list:
-        tweet['risk'] = find_risk(tweet['text'], tone_analyzer)
+        risk = find_risk(tweet['text'], tone_analyzer)
+        tweet['risk'] = risk
+        if testing == True:
+            print(tweet['text'],'\n',risk)
 
+    return tweet_list
 
 def main():
 
-    load_dotenv(find_dotenv())
-    tone_analyzer = ToneAnalyzerV3(
-       username=os.environ.get("TONE_USERNAME"),
-       password=os.environ.get("TONE_PASSWORD"),
-       version='2016-05-19')
+    # load_dotenv(find_dotenv())
+    # tone_analyzer = ToneAnalyzerV3(
+    #    username=os.environ.get("TONE_USERNAME"),
+    #    password=os.environ.get("TONE_PASSWORD"),
+    #    version='2016-05-19')
+    #
+    # # test_tweet = 'suicide die pain misery myself me I'
+    # # test_tweet = 'ight. "hello there, elizabe'
+    # test_tweet = 'anger sadness'
+    # print(find_risk(test_tweet, tone_analyzer, testing=True))
 
-    test_tweet = 'suicide die pain misery myself'
-    # test_tweet = 'ight. "hello there, gar'
 
-    print(find_risk(test_tweet, tone_analyzer))
+    test_list = [{'name':'bob', 'text':'first tweet', 'date_time':'20170326', 'location':'<street adress>'},
+    {'name':'bob', 'text':'i am posting another tweet', 'date_time':'20170326', 'location':'<street adress>'},
+    {'name':'bob', 'text':'i feel sad', 'date_time':'20170326', 'location':'<street adress>'},
+    {'name':'bob', 'text':'misery!!!', 'date_time':'20170326', 'location':'<street adress>'},
+    {'name':'bob', 'text':'my friend invited me to a picnic, and now I am happy', 'date_time':'20170326', 'location':'<street adress>'}]
+
+    process_feed(test_list, testing=True)
+
 
 if __name__ == '__main__':
     main()
